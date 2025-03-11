@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/wavefile@1.0.4/dist/wavefile.min.js"></script>
+
+
+
+    <style>
+        /* Custom styles for chat bubbles */
+        .chat-bubble {
+            max-width: 70%; /* Limit bubble width */
+            word-wrap: break-word;
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: inline-block;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        /* User messages on the right */
+        .user-bubble {
+            background-color: #dcf8c6;
+            float: right; /* Align to the right */
+            text-align: left; /* Align text inside the bubble */
+            margin-left: auto; /* Push away from the left */
+        }
+
+        /* Bot messages on the left */
+        .bot-bubble {
+            background-color: #ffffff;
+            float: left; /* Align to the left */
+            text-align: left; /* Align text inside the bubble */
+            margin-right: auto; /* Push away from the right */
+        }
+
+        /* Clear floating elements */
+        .clearfix {
+            clear: both;
+        }
+
+        /* Background */
+        body {
+            background-color: #f5f5f5;
+        }
+
+        .w3-padding.w3-border.w3-round-large.w3-content {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .background-imag {
+            background-image: url("{% static 'back.jpg' %}"); /* Replace with your image path */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100%; /* Ensure the div has some height */
+        }
+
+
+    </style>
+</head>
+
+<body style="margin-top:80px;">
+    <div class="w3-content w3-card w3-margin-top w3-padding w3-round-large w3-white " style="max-width: 850px;">
+        <div class="w3-row w3-padding ">
+            <h1 class="w3-center w3-text-primary w3-monospace w3-text-pink">🤖<span class="w3-border w3-round-large">Chatbot</span>🤖</h1>
+        </div>
+
+        <!-- Chat Box -->
+        <div class="w3-padding w3-border w3-round-large w3-content background-image " style="max-height: 450px; overflow-y: auto; ">
+            {% if chat_history %}
+                {% for message in chat_history %}
+                    <div class="chat-bubble {% if message.role == 'user' %}user-bubble{% else %}bot-bubble{% endif %}">
+                        <p>
+                            {% if message.role != 'user' %}
+                            <i class="w3-text-grey fa fa-volume-up" 
+                                onclick="playAudio('{{ message.content }}')" 
+                                style="cursor: pointer;">
+                            </i>
+                            {% endif %}
+                            {{ message.content|safe }}
+                        </p>
+                        <span class="w3-small w3-text-grey w3-tiny">{{ message.timestamp|default:"Now" }}</span>
+                    </div>
+                    <div class="clearfix"></div>
+                {% endfor %}
+            {% else %}
+                <div class="w3-content">
+                    <div class="w3-center w3-padding-64 w3-text-white">
+                        <p><b>Welcome! Please ask a question, and I'll be happy to assist you!<b></p>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if objects %}
+                <form method="POST" action="{% url 'select_object' %}" id="objectForm">
+                    {% csrf_token %}
+                    <div class="chat-bubble w3-white">
+                    <p>Select an object to proceed:</p>
+                    {% for obj in objects %}
+                        <input type="radio" name="selected_object" value="{{ obj }}" onchange="document.getElementById('objectForm').submit();"> {{ obj }} <br>
+                        {% endfor %}
+                    </div>
+                </form>
+            {% endif %}
+            
+            
+        </div>
+
+        <!-- Input Section --><br>
+        <div class="w3-row w3-padding w3-border w3-round-large " style="display: flex; align-items: center;">
+            <!-- Image Upload Form -->
+            <form method="post" enctype="multipart/form-data" action="{% url 'upload_image' %}" class="w3-container" style="flex: 0 0 auto; margin-right: 10px;">
+                {% csrf_token %}
+                <label for="photo-upload" class="w3-btn  w3-round w3-border " style="cursor: pointer;">📷</label>
+                <input type="file" id="photo-upload" name="image" accept="image/*" required onchange="this.form.submit();" style="display: none;">
+            </form>
+
+
+            <div class="container">
+                <div class="display"></div>
+                <div class="controllers"></div>
+                <!-- Hidden form for audio file upload -->
+                <form id="audio-upload-form" method="POST" action="{% url 'upload_audio' %}" enctype="multipart/form-data" style="display: none;">
+                    {% csrf_token %}
+                    <input type="file" id="audio-file" name="audio" accept="audio/*" style="display: none;">
+                    <button type="submit" style="display: none;" id="upload-button">Upload</button>
+                </form>
+            </div>
+
+            <!-- Audio Upload Form -->
+            <form method="post" enctype="multipart/form-data" action="{% url 'chatbot' %}" class="w3-container" style="flex: 0 0 auto; margin-right: 10px;">
+                {% csrf_token %}
+                <label for="audio-upload" class="w3-btn  w3-round w3-border" style="cursor: pointer;">🎙️</label>
+                <input type="file" id="audio-upload" name="audio" accept="audio/*" required onchange="this.form.submit();" style="display: none;">
+            </form>
+            
+
+            <!-- Question Input Form -->
+            <form method="post" action="{% url 'chatbot' %}" class="w3-container w3-row" style="display: flex; align-items: center; flex: 1;">
+                {% csrf_token %}
+                <input type="text" name="question" class="w3-input w3-border w3-round-xlarge  w3-margin-right " style="background-color: transparent;"  placeholder="Type a message" style="flex: 1;" required>
+                <button type="submit" class="w3-btn w3-blue w3-round-large w3-hover-shadow-2" style="flex: 0 0 auto;">Send</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+
+
+<script>
+    window.onload = function() {
+        scrollToBottom();
+    };
+
+    function scrollToBottom() {
+        var chatBox = document.querySelector('.w3-padding.w3-border.w3-round-large.w3-content');
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    let currentAudio = null;
+    function playAudio(text) {
+        if (!text.trim()) {
+            console.error("No text provided for audio playback.");
+            return;
+        }
+
+        const audioUrl = `/generate-audio/?text=${encodeURIComponent(text)}`;
+        
+        if (currentAudio && !currentAudio.paused && currentAudio.src === audioUrl) {
+            // If audio is playing and the same message is clicked, pause it
+            currentAudio.pause();
+        } else {
+            // If a different message is clicked or no audio is playing, start from the beginning
+            if (currentAudio) {
+                currentAudio.pause(); // Pause the previous audio
+            }
+
+            currentAudio = new Audio(audioUrl);  // Create new audio for this message
+            currentAudio.play();  // Start playing the audio
+        }
+    }
+
+
+    // If new messages are dynamically added, call scrollToBottom to keep the chat box scrolled down
+    // You can call this function after adding a new message to your chat history
+
+</script>
+
+<script>
+ const display = document.querySelector('.display');
+const controllerWrapper = document.querySelector('.controllers');
+
+const State = ['Initial', 'Record', 'Download'];
+let stateIndex = 0;
+let mediaRecorder, chunks = [], audioURL = '';
+let audioBlob, stream;
+
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    console.log('mediaDevices supported..');
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(userStream => {
+            stream = userStream;
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.ondataavailable = (e) => {
+                chunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                audioBlob = new Blob(chunks, { 'type': 'audio/ogg; codecs=opus' });
+                chunks = [];
+                audioURL = window.URL.createObjectURL(audioBlob);
+                document.querySelector('audio').src = audioURL;
+
+                // Convert OGG or WebM to WAV before upload
+                convertToWav(audioBlob).then(wavBlob => {
+                    // Automatically trigger the file upload with WAV format
+                    const audioFile = new File([wavBlob], 'audio.wav', { type: 'audio/wav' });
+                    const fileInput = document.getElementById('audio-file');
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(audioFile);
+                    fileInput.files = dataTransfer.files;
+
+                    // Automatically submit the form
+                    document.getElementById('audio-upload-form').submit();
+                });
+            };
+        })
+        .catch(error => {
+            console.log('Error occurred while accessing microphone:', error);
+        });
+} else {
+    stateIndex = '';
+    application(stateIndex);
+}
+
+// Function to convert OGG/WebM to WAV
+function convertToWav(oggBlob) {
+    return new Promise((resolve, reject) => {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            const buffer = reader.result;
+            audioContext.decodeAudioData(buffer, (audioBuffer) => {
+                // Create a WAV format from decoded audio
+                const wavBlob = audioBufferToWav(audioBuffer);
+                resolve(wavBlob);
+            }, (error) => {
+                reject('Error decoding audio data');
+            });
+        };
+
+        reader.onerror = () => {
+            reject('Error reading audio file');
+        };
+
+        reader.readAsArrayBuffer(oggBlob);
+    });
+}
+
+// Function to convert AudioBuffer to WAV format
+function audioBufferToWav(audioBuffer) {
+    const sampleRate = audioBuffer.sampleRate;
+    const bufferLength = audioBuffer.length;
+    const numberOfChannels = audioBuffer.numberOfChannels;
+
+    // Create a WAV buffer
+    const wavData = new Uint8Array(44 + bufferLength * numberOfChannels * 2);
+    const dataView = new DataView(wavData.buffer);
+
+    // Write WAV header
+    writeWavHeader(dataView, sampleRate, bufferLength, numberOfChannels);
+
+    // Write audio data
+    for (let channel = 0; channel < numberOfChannels; channel++) {
+        const channelData = audioBuffer.getChannelData(channel);
+        for (let i = 0; i < bufferLength; i++) {
+            const sample = channelData[i] * 32767;
+            dataView.setInt16(44 + (i * numberOfChannels + channel) * 2, Math.max(-32768, Math.min(32767, sample)), true);
+        }
+    }
+
+    return new Blob([wavData], { type: 'audio/wav' });
+}
+
+// Function to write the WAV header
+function writeWavHeader(dataView, sampleRate, bufferLength, numberOfChannels) {
+    const byteRate = sampleRate * numberOfChannels * 2;
+    const blockAlign = numberOfChannels * 2;
+
+    // RIFF header
+    dataView.setUint8(0, 82); // R
+    dataView.setUint8(1, 73); // I
+    dataView.setUint8(2, 70); // F
+    dataView.setUint8(3, 70); // F
+    dataView.setUint32(4, 36 + bufferLength * numberOfChannels * 2, true);
+    dataView.setUint8(8, 87); // W
+    dataView.setUint8(9, 65); // A
+    dataView.setUint8(10, 86); // V
+    dataView.setUint8(11, 69); // E
+    dataView.setUint8(12, 102); // f
+    dataView.setUint8(13, 109); // m
+    dataView.setUint8(14, 116); // t
+    dataView.setUint8(15, 32);  // ' '
+    dataView.setUint32(16, 16, true);  // PCM format
+    dataView.setUint16(20, 1, true);  // PCM
+    dataView.setUint16(22, numberOfChannels, true);
+    dataView.setUint32(24, sampleRate, true);
+    dataView.setUint32(28, byteRate, true);
+    dataView.setUint16(32, blockAlign, true);
+    dataView.setUint16(34, 16, true);  // Bits per sample
+    dataView.setUint8(36, 100); // 'd'
+    dataView.setUint8(37, 97);  // 'a'
+    dataView.setUint8(38, 116); // 't'
+    dataView.setUint8(39, 97);  // 'a'
+    dataView.setUint8(40, 102); // 'f'
+    dataView.setUint8(41, 102); // 'f'
+    dataView.setUint32(42, bufferLength * numberOfChannels * 2, true);  // Data chunk size
+}
+
+// Continue with existing application flow
+
+const clearDisplay = () => {
+    display.textContent = '';
+};
+
+const clearControls = () => {
+    controllerWrapper.textContent = '';
+};
+
+const record = () => {
+    stateIndex = 1;
+    mediaRecorder.start();
+    application(stateIndex);
+};
+
+const stopRecording = () => {
+    stateIndex = 2;
+    mediaRecorder.stop();
+    application(stateIndex);
+};
+
+const addButton = (id, funString, text) => {
+    const btn = document.createElement('button');
+    btn.id = id;
+    btn.setAttribute('onclick', funString);
+    btn.textContent = text;
+    controllerWrapper.append(btn);
+};
+
+const addMessage = (text) => {
+    const msg = document.createElement('p');
+    msg.textContent = text;
+    display.append(msg);
+};
+
+const addAudio = () => {
+    const audio = document.createElement('audio');
+    audio.controls = true;
+    audio.src = audioURL;
+    display.append(audio);
+};
+
+
+const application = (index) => {
+    switch (State[index]) {
+        case 'Initial':
+            clearDisplay();
+            clearControls();
+
+            addButton('record', 'record()', 'Start Recording');
+            break;
+
+        case 'Record':
+            clearDisplay();
+            clearControls();
+            addButton('stop', 'stopRecording()', 'Stop Recording');
+            break;
+
+        case 'Download':
+            clearControls();
+            clearDisplay();
+
+            addAudio();
+            addButton('record', 'record()', 'Record Again');
+            break;
+
+        default:
+            clearControls();
+            clearDisplay();
+            addMessage('Your browser does not support mediaDevices');
+            break;
+    }
+};
+
+application(stateIndex);
+
+</script>
+
+
+
+{% endblock %}

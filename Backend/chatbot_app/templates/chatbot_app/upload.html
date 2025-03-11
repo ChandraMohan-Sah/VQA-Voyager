@@ -1,0 +1,21 @@
+<h1>Upload an Image for YOLO Inference</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label>Select an image:</label>
+    <input type="file" name="image" required>
+    <button type="submit">Upload</button>
+</form>
+ 
+<h2>Result:</h2>
+{% if result_url %}
+    <img src="{{ result_url }}" alt="YOLO Result" style="max-width: 100%; height: auto;">
+    <h3>Detected Objects:</h3>
+    <ul>
+        {% for obj in detected_objects %}
+            <li>{{ obj.label }} (Confidence: {{ obj.score }})</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No result yet. Upload an image to process.</p>
+{% endif %}
+ 

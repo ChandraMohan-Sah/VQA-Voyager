@@ -1,0 +1,63 @@
+/* Custom styling for chat app */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+}
+
+.w3-btn:hover {
+    background-color: #0056b3 !important;
+}
+
+.w3-card {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.w3-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+}
+
+.w3-text-white {
+    color: white;
+}
+
+.w3-text-grey {
+    color: grey;
+}
+
+.w3-small {
+    font-size: 12px;
+}
+
+.w3-left-align {
+    text-align: left;
+}
+
+.w3-right-align {
+    text-align: right;
+}
+
+.w3-card-2 {
+    background-color: #f9f9f9;
+}
+
+.w3-card .w3-row {
+    display: flex;
+    align-items: flex-start;
+}
+
+.w3-col.s1 img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
