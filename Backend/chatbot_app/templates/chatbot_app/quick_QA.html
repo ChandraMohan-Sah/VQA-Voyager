@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/wavefile@1.0.4/dist/wavefile.min.js"></script>
+
+
+
+    <style>
+        /* Custom styles for chat bubbles */
+        .chat-bubble {
+            max-width: 70%; /* Limit bubble width */
+            word-wrap: break-word;
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: inline-block;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        /* User messages on the right */
+        .user-bubble {
+            background-color: #dcf8c6;
+            float: right; /* Align to the right */
+            text-align: left; /* Align text inside the bubble */
+            margin-left: auto; /* Push away from the left */
+        }
+
+        /* Bot messages on the left */
+        .bot-bubble {
+            background-color: #ffffff;
+            float: left; /* Align to the left */
+            text-align: left; /* Align text inside the bubble */
+            margin-right: auto; /* Push away from the right */
+        }
+
+        /* Clear floating elements */
+        .clearfix {
+            clear: both;
+        }
+
+        /* Background */
+        body {
+            background-color: #f5f5f5;
+        }
+
+        .w3-padding.w3-border.w3-round-large.w3-content {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .background-imag {
+            background-image: url("{% static 'back.jpg' %}"); /* Replace with your image path */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100%; /* Ensure the div has some height */
+        }
+
+
+    </style>
+</head>
+
+
+<body style="margin-top:80px;">
+    <div class="w3-content w3-card w3-margin-top w3-padding w3-round-large w3-white" style="max-width: 850px;">
+        <h2 class="w3-center w3-monospace">Quick Question-Answering</h2>
+        
+        <form action="{% url 'quick-qa' %}" method="POST">
+            {% csrf_token %}
+            
+            <label class="w3-text w3-serif">Select Class:</label>
+            <select name="object_name" class="w3-select w3-margin-bottom  w3-serif">
+                <option value="" disabled selected>Choose a class</option>
+                <option value="yali">Yali</option>
+                <option value="akhi jhyal">Akhi Jhyal</option>
+                <option value="boudhanath">Boudhanath</option>
+                <option value="class4">Class 4</option>
+                <option value="class5">Class 5</option>
+                <option value="class6">Class 6</option>
+                <option value="class7">Class 7</option>
+                <option value="class8">Class 8</option>
+                <option value="class9">Class 9</option>
+                <option value="class10">Class 10</option>
+                <option value="class11">Class 11</option>
+                <option value="class12">Class 12</option>
+            </select>
+            
+            <label class="w3-text  w3-serif">Enter Your Question:</label>
+            <input name="question" class="w3-input w3-margin-bottom w3-serif" type="text" >
+            
+            <button type="submit" class="w3-button w3-blue w3-margin-bottom">Submit</button>
+        </form>
+        <div class="w3-panel w3-pale-green w3-padding w3-round w3-margin-top  w3-serif">
+            <h4 class="w3-monospace">Answer:</h4>
+            <p>{{ answer }}</p>
+        </div>
+
+    </div>
+</body>
+
+
+{% endblock %}

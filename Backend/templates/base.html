@@ -1,0 +1,121 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <link rel="stylesheet" href="{% static 'w3.css' %}">
+</head>
+
+
+<style>
+  .resized-image {
+      width: 230px; /* Adjust the width as needed */
+      height: auto; /* Ensures the height scales proportionally */
+  }
+
+    .card-link {
+      text-decoration: none; /* Remove underline from the link */
+      color: inherit; /* Inherit text color from the parent */
+      display: block; /* Ensure the entire card is clickable */
+    }
+
+    body{
+      background-color: whitesmoke;
+    }
+    .background-image {
+            background-image: url("{% static 'swyambhu.jpg' %}"); /* Replace with your image path */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100%; /* Ensure the div has some height */
+        }
+
+    .sidebar-image {
+      background-image: url("{% static 'flag.jpg' %}"); /* Replace with your image path */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100%; /* Ensure the div has some height */
+    }
+
+
+</style>
+
+
+
+<body class="background-imag">
+  
+<!-- Sidebar/menu -->
+<nav class="w3-sidebar  w3-collapse w3-top w3-large w3-padding w3-grey" style="z-index:3;width:300px;font-weight:bold;" id="mySidebar"><br>
+    <a href="javascript:void(0)" onclick="w3_close()" class="w3-button w3-hide-large w3-display-topleft" style="width:100%;font-size:22px">Close Menu</a>
+
+        <!-- Sidebar/menu -->
+        <div class="w3-bar-block">
+
+            <div class="w3-panel w3-topbar w3-bottombar w3-border-teal w3-light-grey">
+                <a href="{% url 'chatbot' %}" onclick="w3_close()" class="card-link">  <h1 class="w3-large w3-text-black w3-monospace w3-center "><b>VQA Demo</b></h1></a>
+        </div><br>
+            
+         </div>
+         <div   style="width: 100%; display: flex; justify-content: center;">
+            <a href="{% url 'quick-qa' %}" class="  w3-button w3-border w3-border-white w3-round-large w3-serif" style="width: 100%; text-align: center;">
+              Quick QA
+            </a>
+          </div>
+          <br>
+          <div   style="width: 100%; display: flex; justify-content: center;">
+            <a href="{% url 'clear-chat-history' %}" class="  w3-button w3-border w3-border-white w3-round-large w3-serif" style="width: 100%; text-align: center;">
+              Clear Chat History
+            </a>
+          </div>
+          <br>
+</nav>
+
+
+<!-- Top menu on small screens -->
+<header class="w3-container w3-top w3-hide-large w3-grey w3-xlarge w3-padding">
+  <a href="javascript:void(0)" class="w3-button w3-teal w3-margin-right w3-round-large" onclick="w3_open()">☰</a>
+  <span>VQA Testing</span>
+</header>
+
+
+<!-- Overlay effect when opening sidebar on small screens -->
+<div class="w3-overlay w3-hide-large" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay">
+  <br><br>
+</div>
+
+  {% block content %}
+
+
+
+
+  {% endblock %}
+
+<script>
+
+function w3_open() {
+    document.getElementById("mySidebar").style.display = "block";
+    document.getElementById("myOverlay").style.display = "block";
+  }
+   
+  function w3_close() {
+    document.getElementById("mySidebar").style.display = "none";
+    document.getElementById("myOverlay").style.display = "none";
+  }
+  
+  // Modal Image Gallery
+  function onClick(element) {
+    document.getElementById("img01").src = element.src;
+    document.getElementById("modal01").style.display = "block";
+    var captionText = document.getElementById("caption");
+    captionText.innerHTML = element.alt;
+  }
+</script>
+
+
+</body>
+</html>
